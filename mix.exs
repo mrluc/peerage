@@ -3,8 +3,8 @@ defmodule Peerage.Mixfile do
 
   def project do
     [app: :peerage,
-     version: "0.1.0",
-     elixir: "~> 1.3",
+     version: "0.3.0",
+     elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
@@ -18,8 +18,10 @@ defmodule Peerage.Mixfile do
   
   def description do
     """
-    Cluster formation library with support for dns-based 
-    discovery which should work on Kubernetes and Weave.
+    Easy Cluster formation, via DNS (for Kubernetes, Weave, 
+    discoverd, Swarm and others), UDP multicast, or
+    a plain list of nodes. Easy extensibility for custom 
+    Providers.
     """
   end
 

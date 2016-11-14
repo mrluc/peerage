@@ -2,11 +2,18 @@
 
 Peerage helps your nodes find each other.
 
-It supports dns-based service discovery, which
-means you can use it out of the box with both
-Kubernetes and Weave (and probably other things, too).
+It supports DNS-based discovery, which
+means you can use it out of the box with Kubernetes (and 
+probably also Weave, discoverd,
+Swarm, or other anything else with dns-based service 
+discovery).
 
-It's also easy to extend.
+It also supports UDP-based discovery, so that nodes
+on the same network (like docker containers on the 
+same host) can find each other.
+
+It's also easy to extend: adding a new Provider can
+be as simple as writing a single function.
 
 
 ## Installation
@@ -26,28 +33,35 @@ and start its application:
 
 ## Usage
 
+Peerage will attempt to `Node.connect/1` to node names returned
+by a provider that you choose:
+
 ```elixir
    config :peerage, via: Peerage.Via.$SOME_PROVIDER
 ```
 
-There are several providers.
+There are several providers available:
 
-- `Peerage.Via.Self` - no-config option that only
-  attempts to connect to itself. Not good for much.
-
-- `Peerage.Via.List` - for using a hardcoded list of
-  node names. Good for dev environment. See example below.
-  
-- `Peerage.Via.Dns` - for getting IP addresses from
-  DNS. Good for the production config. You can test
-  it locally by telling it your app's dns name is
+- `Peerage.Via.Self` is a 'hello, world' provider that 
+  only connects to itself.
+- `Peerage.Via.List` uses a hardcoded list of
+  node names. It's good for development, or when you know
+  production node names ahead of time. See example below.
+- `Peerage.Via.Dns` gets IP addresses from
+  DNS. Works for production config on **Kubernetes**; probably
+  works on Weave, Flynn, and Swarm. You can test
+  it locally with one node by telling it your app's dns name is
   `localhost`. See example below.
+- `Peerage.Via.Udp` uses peer-to-peer UDP multicast. Docker
+  containers on a single host can use this out of the 
+  box (example below). 
+  Could be useful in a variety of situations
+  where nodes are on the same network/overlay network, providing
+  the network doesn't restrict multicast.
+- **Custom providers** are simple (but there's more detail below). TL;DR is:
   
-- **Custom providers** are simple (but there's more detail below in this doc if you need it). TLDR is:
-
   ```elixir
       defmodule MyWayToFindHomies do
-        use Peerage.Server
         def poll, do: [ :"node@somewhere" ]
       end
   ```
@@ -57,8 +71,8 @@ There are several providers.
 
 Usually, I use the List provider in dev 
 config, so I can easily spin up at least 2 nodes 
-locally in console, and the Dns provider in 
-production config, used for releases.
+locally in console, and the Dns provider for my 
+production releases.
 
 ### Peerage.Via.List
 
@@ -115,9 +129,8 @@ Your config/prod.exs might look like this:
 
 ```elixir
     config :peerage, via: Peerage.Via.Dns
-      dns_name: "myapp",
-      app_name: "myapp"  # or k8s-specific FQDN, like
-                         # "myapp.myns.svc.myclust.local"
+      dns_name: "myapp", # or k8s FQDN: "myapp.ns.svc.clust.local"
+      app_name: "myapp"  
 ```
 
 Now your app will look up the name "myapp" from within
@@ -133,4 +146,41 @@ true on a system with Weave for container networking.
   change `dns_name`.
 
 In Kubernetes, you can test all of this with minikube.
+
+### Peerage.Via.Udp
+
+```elixir
+  config :peerage, via: Peerage.Via.Udp, serves: true
+    port: 45900
+```
+
+Will both broadcast and receive node names via UDP on port 45900,
+and keep track of ones it's seen so that Peerage connect to them. 
+It's a GenServer, so we let Peerage know it needs to be run and
+supervised with `serves: true`.
+
+### Custom Providers
+
+For simple cases, where you're polling a source of truth (some API, etc): just provide a `poll` method that returns a list of node-name atoms:
+
+```elixir
+defmodule MyWayToFindHomies do
+  def poll, do: [ :"name@host" ] # poll source of truth
+end
+```
+```elixir
+config :peerage, via: MyWayToFindHomies
+```
+
+For more complex, peer-to-peer cases -- say, UDP multicast, where each node is broadcasting itself on the network -- you'll probably want to use a GenServer, listening for incoming broadcast messages, and building up a list of 'seen' nodes over time.
+
+If your Provider is an OTP process, just add `serves: true` to your config:
+
+```elixir
+config :peerage, via: MyWayToFindHomies, serves: true
+``` 
+
+For a full-fledged example, see `Peerage.Via.Udp`.
+
+
 

@@ -3,8 +3,9 @@ defmodule PeerageTest do
   doctest Peerage
 
   test "Peerage.Via.Dns.poll returns a list of names" do
+    # note: if you're not connected to a network this won't work.
+    #  it's dns resolution...
     [ _addr | _rest ] = Peerage.Via.Dns.poll
   end
 
-  #defp some_node_names, do: [:"nonode@nohost", :"a@127.0.0.1"]
 end
