@@ -3,7 +3,7 @@ defmodule Peerage.Mixfile do
 
   def project do
     [app: :peerage,
-     version: "0.3.0",
+     version: "0.3.1",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -18,10 +18,7 @@ defmodule Peerage.Mixfile do
   
   def description do
     """
-    Easy Cluster formation, via DNS (for Kubernetes, Weave, 
-    discoverd, Swarm and others), UDP multicast, or
-    a plain list of nodes. Easy extensibility for custom 
-    Providers.
+    Easy clustering, pluggable discovery: via DNS (for Kubernetes, Weave, discoverd, Swarm and others), UDP multicast, or a plain list of nodes. Easy extensibility for custom Providers.
     """
   end
 
@@ -31,7 +28,8 @@ defmodule Peerage.Mixfile do
       maintainers: ["Luc Fueston"],
       contributors: ["Luc Fueston"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/mrluc/peerage",}]
+      links: %{"GitHub" => "https://github.com/mrluc/peerage",
+               "Docs" => "https://hexdocs.pm/peerage/readme.html"}]
   end
 
   def application do

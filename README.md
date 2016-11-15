@@ -83,6 +83,7 @@ config :peerage, node_list: [
   :"myapp2@127.0.0.1"
 ]
 ```
+
     $ iex --name myapp1@127.0.0.1 -S mix   # one shell
     $ iex --name myapp2@127.0.0.1 -S mix   # other shell
 
