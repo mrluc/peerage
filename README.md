@@ -25,9 +25,8 @@ and start its application:
     def application do
       [applications: [:peerage]]
     end
-    
     def deps do
-      [{:peerage, "~> 0.1.0"}]
+      [{:peerage, "~> 0.3.1"}]
     end
 ```
 
@@ -37,10 +36,10 @@ Peerage will attempt to `Node.connect/1` to node names returned
 by a provider that you choose:
 
 ```elixir
-   config :peerage, via: Peerage.Via.$SOME_PROVIDER
+   config :peerage, via: Peerage.Via.Dns
 ```
 
-There are several providers available:
+There are several providers available, each with examples further down the page.
 
 - `Peerage.Via.Self` is a 'hello, world' provider that 
   only connects to itself.
@@ -51,7 +50,7 @@ There are several providers available:
   DNS. Works for production config on **Kubernetes**; probably
   works on Weave, Flynn, and Swarm. You can test
   it locally with one node by telling it your app's dns name is
-  `localhost`. See example below.
+  `localhost` (this is also the default). See example below.
 - `Peerage.Via.Udp` uses peer-to-peer UDP multicast. Docker
   containers on a single host can use this out of the 
   box (example below). 
@@ -69,16 +68,16 @@ There are several providers available:
       config :peerage, via: MyWayToFindHomies
   ```
 
-Usually, I use the List provider in dev 
-config, so I can easily spin up at least 2 nodes 
-locally in console, and the Dns provider for my 
-production releases.
+Usually, I use the List or Udp providers in dev 
+config, so I can easily test multiple nodes on my machine,
+and the Dns provider for my production releases, which run
+in places (like Kubernetes) where nodes can be 
+found by DNS discovery.
 
 ### Peerage.Via.List
 
 ```elixir
-config :peerage, via: Peerage.Via.List
-config :peerage, node_list: [
+config :peerage, via: Peerage.Via.List, node_list: [
   :"myapp1@127.0.0.1",
   :"myapp2@127.0.0.1"
 ]
@@ -87,17 +86,19 @@ config :peerage, node_list: [
     $ iex --name myapp1@127.0.0.1 -S mix   # one shell
     $ iex --name myapp2@127.0.0.1 -S mix   # other shell
 
-I usually wrap this with a script for launching dev shell and prod release shells, so that I just call `bin/dev 1` or `bin/prod 1`.
+I wrap this with a script for launching dev shell and prod release shells, so that I just call `bin/dev 1` or `bin/prod 1` to test locally in mix, or a release with env vars set to work on my machine.
 
 ### Peerage.Via.Dns
+
+DNS-based discovery is where it's at.
 
 **Minimal dns example, one node:** after installing,
 add the following to your config:
 
 ```elixir
-    config :peerage, via: Peerage.Via.Dns
-    config :peerage, dns_name: "localhost"
-    config :peerage, app_name: "myapp"
+    config :peerage, via: Peerage.Via.Dns,
+      dns_name: "localhost"
+      app_name: "myapp"
 ```
 
 And then run iex like this:
@@ -107,7 +108,7 @@ And then run iex like this:
 It'll use dns to get the IP addresses
 for 'localhost', and try to connect to them. In this
 case, there'll only be one result, but it's
-working; it got that ip by looking up localhost.
+working; it got that ip by looking up localhost!
 
 
 

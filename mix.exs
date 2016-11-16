@@ -3,7 +3,7 @@ defmodule Peerage.Mixfile do
 
   def project do
     [app: :peerage,
-     version: "0.3.1",
+     version: "0.3.2",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
