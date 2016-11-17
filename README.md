@@ -26,7 +26,7 @@ and start its application:
       [applications: [:peerage]]
     end
     def deps do
-      [{:peerage, "~> 0.3.1"}]
+      [{:peerage, "~> 0.3.4"}]
     end
 ```
 

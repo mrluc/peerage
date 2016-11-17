@@ -28,13 +28,13 @@ defmodule Peerage.Via.Dns do
   
   def poll, do: lookup |> to_names( [] )
 
-  # erlang dns lookup
-  defp lookup,    do: lookup String.to_charlist(hostname)
-  defp lookup(c), do: :inet_res.lookup(c,:in,:a)
-
+  defp lookup do
+    hostname |> String.to_charlist |> :inet_res.lookup(:in, :a)
+  end
+  
   # turn list of ips into list of node names
   defp to_names([{a,b,c,d} | rest], acc) when is_list(acc) do
-    Logger.debug "  -> Peerage.Via.Dns nslookup result: #{a}.#{b}.#{c}.#{d}"
+    Logger.debug " -> Peerage.Via.Dns resolved '#{hostname}' to #{a}.#{b}.#{c}.#{d} "
     to_names rest, [:"#{app_name}@#{a}.#{b}.#{c}.#{d}"] ++ acc
   end
   defp to_names([], lst), do: lst

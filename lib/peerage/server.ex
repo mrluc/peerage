@@ -36,10 +36,10 @@ defmodule Peerage.Server do
   defp log_results(ls) do
     ls = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
     Logger.debug """
-    [Peerage.Server] Peer discovery, #{interval}s interval. Results: \n
+    [Peerage 0.3.3][#{provider}] Peer discovery, #{interval}s interval. Results: \n
     #{ ls |> Enum.map(&log_one/1) |> Enum.join("\n") }\n
          LIVE NODES
-         #{ [[Atom.to_string(node), " (self)"]] ++ Node.list |> Enum.join("\n") }
+         #{ [[Atom.to_string(node), " (self)"]] ++ Node.list |> Enum.join("\n     ") }
     """
   end
   defp log_one([s,ok]) do
