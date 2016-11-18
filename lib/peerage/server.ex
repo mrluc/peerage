@@ -1,53 +1,67 @@
 defmodule Peerage.Provider do
+  @moduledoc "All a Provider needs is a 'poll' method."
   @callback poll() :: any
 end
 
 defmodule Peerage.Server do
+
+  @moduledoc """
+  Supervised server that polls the configured Provider every so often,
+  deduplicating results, compares to already-connected nodes, and
+  attempts to `Node.connect/1` to new ones.
+  """
+
   use GenServer
   require Logger
-  
+
   def start_link do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
-  
+
   def init(state) do
     Process.send_after(self(), :poll, 500)
     {:ok, state}
   end
-  
+
   def handle_info(:poll, state) do
     discover
     Process.send_after(self(), :poll, interval * 1000)
     {:noreply, state}
   end
-  
+
   def poll,     do: apply(provider, :poll, [])
   def interval, do: Application.get_env(:peerage, :interval, 10)
-  
-  defoverridable [ poll: 0, interval: 0 ]
-  
+
+  defoverridable [poll: 0, interval: 0]
+
   defp discover do
     poll
     |> only_fresh_node_names
-    |> Enum.map(&( [&1, Node.connect(&1)] ))
+    |> Enum.map(&([&1, Node.connect(&1)]))
     |> log_results
   end
-  
+
   defp log_results(ls) do
-    ls = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
+    table = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
     Logger.debug """
-    [Peerage 0.3.3][#{provider}] Peer discovery, #{interval}s interval. Results: \n
-    #{ ls |> Enum.map(&log_one/1) |> Enum.join("\n") }\n
-         LIVE NODES
-         #{ [[Atom.to_string(node), " (self)"]] ++ Node.list |> Enum.join("\n     ") }
+    [Peerage #{vsn}][#{provider}] Discovery every #{interval}s.
+
+    #{ table |> Enum.map(&log_one/1) |> Enum.join("\n") }
+
+    #{ ["     LIVE NODES", [Atom.to_string(node), " (self)"]] ++ Node.list
+       |> Enum.join("\n     ")
+    }
     """
   end
   defp log_one([s,ok]) do
-    "     "<>String.pad_trailing("#{s}",20) <> String.pad_trailing("#{ok}",10)
+    "     " <> String.pad_trailing("#{s}",20) <> String.pad_trailing("#{ok}",10)
   end
-  
+  defp vsn, do: Application.spec(:peerage)[:vsn]
+
   defp only_fresh_node_names(ps) do
-    MapSet.difference( MapSet.new(ps), MapSet.new(Node.list) )
+    ps
+    |> MapSet.new
+    |> MapSet.difference(MapSet.new(Node.list))
     |> MapSet.to_list
   end
   defp provider do
