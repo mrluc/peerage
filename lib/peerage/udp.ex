@@ -33,10 +33,10 @@ defmodule Peerage.Via.Udp do
   def start_link, do: GenServer.start_link __MODULE__, :ok, name: __MODULE__
 
   def init(:ok) do
-    {:ok, socket} = :gen_udp.open port = get_port, [
+    {:ok, socket} = :gen_udp.open port = get_port(), [
       :binary, reuseaddr: true, broadcast: true, multicast_loop: true,
-      active: 10, multicast_ttl: get_ttl,
-      ip: get_ip, add_membership: {maddr = get_maddr, {0,0,0,0}}
+      active: 10, multicast_ttl: get_ttl(),
+      ip: get_ip(), add_membership: {maddr = get_maddr(), {0,0,0,0}}
     ]
     {:ok, %{seen: MapSet.new(), conn: {maddr, port, socket}}, 0}
   end
@@ -52,7 +52,7 @@ defmodule Peerage.Via.Udp do
 
   @doc "Broadcast our node name via UDP every 3-7 seconds"
   def handle_info(:broadcast, state = %{conn: {addr, port, sock}}) do
-    :ok = :gen_udp.send(sock, addr, port, ["Peer:#{ node }"])
+    :ok = :gen_udp.send(sock, addr, port, ["Peer:#{ node() }"])
     Process.send_after(self(), :broadcast, :rand.uniform(4_000) + 3_000)
     {:noreply, state}
   end

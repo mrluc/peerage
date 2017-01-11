@@ -8,8 +8,8 @@ defmodule Peerage.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps(),
-     package: package, # # docs
-     description: description,
+     package: package(), # # docs
+     description: description(),
      name: "Peerage",
      source_url: "https://github.com/mrluc/peerage",
      homepage_url: "https://github.com/mrluc/peerage",
