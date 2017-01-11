@@ -43,11 +43,11 @@ defmodule Peerage do
   import Supervisor.Spec, warn: false
   def start(_type, _args) do
     opts = [strategy: :one_for_one, name: Peerage.Supervisor]
-    Supervisor.start_link(children(serves?), opts)
+    Supervisor.start_link(children(serves?()), opts)
   end
 
   defp children(_srv = false), do: [worker(Peerage.Server,[])]
-  defp children(_srv = true),  do: [worker(Peerage.Server,[]), worker(provider,[])]
+  defp children(_srv = true),  do: [worker(Peerage.Server,[]), worker(provider(),[])]
 
   defp provider, do: Application.get_env(:peerage, :via, Peerage.Via.Self)
   defp serves?,  do: Application.get_env(:peerage, :serves, false)

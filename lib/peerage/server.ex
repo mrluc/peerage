@@ -24,18 +24,18 @@ defmodule Peerage.Server do
   end
 
   def handle_info(:poll, state) do
-    discover
-    Process.send_after(self(), :poll, interval * 1000)
+    discover()
+    Process.send_after(self(), :poll, interval() * 1000)
     {:noreply, state}
   end
 
-  def poll,     do: apply(provider, :poll, [])
+  def poll,     do: apply(provider(), :poll, [])
   def interval, do: Application.get_env(:peerage, :interval, 10)
 
   defoverridable [poll: 0, interval: 0]
 
   defp discover do
-    poll
+    poll()
     |> only_fresh_node_names
     |> Enum.map(&([&1, Node.connect(&1)]))
     |> log_results
@@ -44,11 +44,11 @@ defmodule Peerage.Server do
   defp log_results(ls) do
     table = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
     Logger.debug """
-    [Peerage #{vsn}][#{provider}] Discovery every #{interval}s.
+    [Peerage #{vsn()}][#{provider()}] Discovery every #{interval()}s.
 
     #{ table |> Enum.map(&log_one/1) |> Enum.join("\n") }
 
-    #{ ["     LIVE NODES", [Atom.to_string(node), " (self)"]] ++ Node.list
+    #{ ["     LIVE NODES", [Atom.to_string(node()), " (self)"]] ++ Node.list
        |> Enum.join("\n     ")
     }
     """
