@@ -33,18 +33,20 @@ defmodule Peerage.Via.Udp do
   def start_link, do: GenServer.start_link __MODULE__, :ok, name: __MODULE__
 
   def init(:ok) do
-    {:ok, socket} = :gen_udp.open port = get_port, [
+    {:ok, socket} = :gen_udp.open port = get_port(), [
       :binary, reuseaddr: true, broadcast: true, multicast_loop: true,
-      active: 10, multicast_ttl: get_ttl,
-      ip: get_ip, add_membership: {maddr = get_maddr, {0,0,0,0}}
+      active: 10, multicast_ttl: get_ttl(),
+      ip: get_ip(), add_membership: {maddr = get_maddr(), {0,0,0,0}}
     ]
     {:ok, %{seen: MapSet.new(), conn: {maddr, port, socket}}, 0}
   end
 
   @doc "Client function: `Peerage.Provider` callback. Calls this GenServer."
-  def poll, do: __MODULE__ |> GenServer.whereis |> do_poll
-  defp do_poll(pid) when is_pid(pid), do: GenServer.call(__MODULE__, :poll)
-  defp do_poll(_),                    do: IO.puts "(no server)"; []
+  def poll do
+    __MODULE__ |> GenServer.whereis |> do_poll
+  end
+  defp do_poll(pid) when is_pid(pid), do: __MODULE__ |> GenServer.call(:poll)
+  defp do_poll(_),                    do: Logger.debug "(no server)"; []
 
   @doc "Server function: returns list of node names we've seen."
   def handle_call(:poll, _, state = %{seen: ms}), do: {:reply, MapSet.to_list(ms), state}
@@ -52,7 +54,7 @@ defmodule Peerage.Via.Udp do
 
   @doc "Broadcast our node name via UDP every 3-7 seconds"
   def handle_info(:broadcast, state = %{conn: {addr, port, sock}}) do
-    :ok = :gen_udp.send(sock, addr, port, ["Peer:#{ node }"])
+    :ok = :gen_udp.send(sock, addr, port, ["Peer:#{ node() }"])
     Process.send_after(self(), :broadcast, :rand.uniform(4_000) + 3_000)
     {:noreply, state}
   end
@@ -64,16 +66,19 @@ defmodule Peerage.Via.Udp do
     :inet.setopts(sock, active: 1)
     {:noreply, %{state | seen: ms |> MapSet.put(name |> String.to_atom)}}
   end
-  def handle_info({:udp,sock,_,_,_}, state) do # malformed packet,
-    :inet.setopts(sock, active: 1)             # but we'd like not to die.
-    {:noreply, state}
+  def handle_info({:udp,sock,_,_,_}, state) do # bad packet,
+    :inet.setopts(sock, active: 1)             # but don't die.
+    {:noreply, state}                          #  ^ TODO configurable.
   end
 
   def terminate(_,_, %{conn: {_,_,sock}}), do: :gen_udp.close(sock)
 
   # helpers
-  defp get_port,  do: Application.get_env :peerage, :port, 45_900
+  defp get_port,  do: Application.get_env(:peerage, :port, 45_900) |> to_i
   defp get_ip,    do: Application.get_env :peerage, :ip, {0,0,0,0}
   defp get_maddr, do: Application.get_env :peerage, :multicast_addr, {230,1,1,1}
-  defp get_ttl,   do: Application.get_env :peerage, :ttl, 1
+  defp get_ttl,   do: Application.get_env(:peerage, :ttl, 1) |> to_i
+
+  defp to_i(i) when is_integer(i), do: i
+  defp to_i(o),                    do: o |> to_string |> String.to_integer
 end
