@@ -47,7 +47,7 @@ defmodule Peerage.Server do
   #  frustrating 1% of times, but tying it to interval TODO might be
   #  bad for your use cases. Sorry again.
   defp log_results(ls) do
-    if log_results? do
+    if log_results?() do
       table = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
       Logger.debug """
       [Peerage #{vsn()}][ #{provider() }] Discovery every #{interval()}s.
