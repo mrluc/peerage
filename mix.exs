@@ -15,7 +15,7 @@ defmodule Peerage.Mixfile do
      homepage_url: "https://github.com/mrluc/peerage",
      docs: [main: "Peerage", extras: ["README.md"]]]
   end
-  
+
   def description do
     """
     Easy clustering, pluggable discovery: via DNS (for Kubernetes, Weave, discoverd, Swarm and others), UDP multicast, or a plain list of nodes. Easy extensibility for custom Providers.
@@ -33,9 +33,9 @@ defmodule Peerage.Mixfile do
   end
 
   def application do
-    [applications: [:logger], mod: {Peerage, []}]
+    [applications: [:logger, :deferred_config], mod: {Peerage, []}]
   end
-  
+
   defp deps do
     [
       {:deferred_config, "~> 0.1.0"},
