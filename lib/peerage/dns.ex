@@ -42,10 +42,15 @@ defmodule Peerage.Via.Dns do
 
   # helpers
   defp app_name do
-    Application.get_env(:peerage, :app_name, "nonode")
+    Application.get_env(:peerage, :app_name, "nonode") |> config_to_binary
   end
   defp hostname do
-    Application.get_env(:peerage, :dns_name, "localhost")
+    Application.get_env(:peerage, :dns_name, "localhost") |> config_to_binary
   end
   defp to_s(_ip = {a,b,c,d}), do: "#{a}.#{b}.#{c}.#{d}"
+
+  # Convert tuples like {:system, "ENV_NAME"} to binary
+  defp config_to_binary(value) when is_binary(value), do: value
+  defp config_to_binary({:system, value}), do: System.get_env(value)
+  defp config_to_binary({:system, value, default}), do: System.get_env(value) || default
 end
