@@ -74,7 +74,22 @@ and the Dns provider for my production releases, which run
 in places (like Kubernetes) where nodes can be 
 found by DNS discovery.
 
-### Peerage.Via.List
+## Deferred Config
+
+Supporting release config is easy now.
+
+The `:peerage` app uses
+[DeferredConfig](https://hex.pm/packages/deferred_config),
+at app startup, so all config for the app (including
+any custom providers) automatically supports run-time
+config via `{:system, "MY_ENV_VAR"}` tuples (with optional
+defaults and conversion functions), as well as arbitrary
+functions via MFA tuples. See DeferredConfig for more
+details, but the upshot is that everything you want
+to be runtime configurable should be.
+
+
+## Peerage.Via.List
 
 ```elixir
 config :peerage, via: Peerage.Via.List, node_list: [
@@ -88,7 +103,7 @@ config :peerage, via: Peerage.Via.List, node_list: [
 
 I wrap this with a script for launching dev shell and prod release shells, so that I just call `bin/dev 1` or `bin/prod 1` to test locally in mix, or a release with env vars set to work on my machine.
 
-### Peerage.Via.Dns
+## Peerage.Via.Dns
 
 DNS-based discovery is where it's at.
 
@@ -149,7 +164,7 @@ true on a system with Weave for container networking.
 
 In Kubernetes, you can test all of this with minikube.
 
-### Peerage.Via.Udp
+## Peerage.Via.Udp
 
 ```elixir
   config :peerage, via: Peerage.Via.Udp, serves: true
@@ -161,7 +176,7 @@ and keep track of ones it's seen so that Peerage connect to them.
 It's a GenServer, so we let Peerage know it needs to be run and
 supervised with `serves: true`.
 
-### Custom Providers
+## Custom Providers
 
 For simple cases, where you're polling a source of truth (some API, etc): just provide a `poll` method that returns a list of node-name atoms:
 

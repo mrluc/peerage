@@ -39,7 +39,7 @@ defmodule PeerageTest do
   defp delete_all_env(app) do
     app
     |> Application.get_all_env
-    |> Enum.each(fn {k, v} ->
+    |> Enum.each(fn {k, _} ->
       Application.delete_env(app, k)
     end)
   end

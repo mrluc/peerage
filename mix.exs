@@ -3,7 +3,7 @@ defmodule Peerage.Mixfile do
 
   def project do
     [app: :peerage,
-     version: "0.3.4",
+     version: "1.0.0",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -13,7 +13,7 @@ defmodule Peerage.Mixfile do
      name: "Peerage",
      source_url: "https://github.com/mrluc/peerage",
      homepage_url: "https://github.com/mrluc/peerage",
-     docs: [main: "Peerage", extras: ["README.md"]]]
+     docs: [main: "readme", extras: ["README.md"]]]
   end
   
   def description do
