@@ -74,11 +74,9 @@ defmodule Peerage.Via.Udp do
   def terminate(_,_, %{conn: {_,_,sock}}), do: :gen_udp.close(sock)
 
   # helpers
-  defp get_port,  do: Application.get_env(:peerage, :port, 45_900) |> to_i
+  defp get_port,  do: Application.get_env :peerage, :port, 45_900
   defp get_ip,    do: Application.get_env :peerage, :ip, {0,0,0,0}
   defp get_maddr, do: Application.get_env :peerage, :multicast_addr, {230,1,1,1}
-  defp get_ttl,   do: Application.get_env(:peerage, :ttl, 1) |> to_i
+  defp get_ttl,   do: Application.get_env :peerage, :ttl, 1
 
-  defp to_i(i) when is_integer(i), do: i
-  defp to_i(o),                    do: o |> to_string |> String.to_integer
 end

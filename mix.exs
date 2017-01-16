@@ -38,7 +38,7 @@ defmodule Peerage.Mixfile do
   
   defp deps do
     [
-      {:deferred_config, path: "../deferred_config"},
+      {:deferred_config, "~> 0.1.0"},
       {:ex_doc, "~> 0.14", only: :dev},
       {:credo, "~> 0.5", only: [:dev, :test]},
     ]
