@@ -31,6 +31,7 @@ defmodule Peerage.Server do
 
   def poll,     do: apply(provider(), :poll, [])
   def interval, do: Application.get_env(:peerage, :interval, 10)
+  def log_results?, do: Application.get_env(:peerage, :log_results, true)
 
   defoverridable [poll: 0, interval: 0]
 
@@ -46,16 +47,18 @@ defmodule Peerage.Server do
   #  frustrating 1% of times, but tying it to interval TODO might be
   #  bad for your use cases. Sorry again.
   defp log_results(ls) do
-    table = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
-    Logger.debug """
-    [Peerage #{vsn()}][ #{provider() }] Discovery every #{interval()}s.
+    if log_results? do
+      table = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
+      Logger.debug """
+      [Peerage #{vsn()}][ #{provider() }] Discovery every #{interval()}s.
 
-    #{ table |> Enum.map(&log_one/1) |> Enum.join("\n") }
+      #{ table |> Enum.map(&log_one/1) |> Enum.join("\n") }
 
-    #{ ["     LIVE NODES", [Atom.to_string(node()), " (self)"]] ++ Node.list
-       |> Enum.join("\n     ")
-    }
-    """
+      #{ ["     LIVE NODES", [Atom.to_string(node()), " (self)"]] ++ Node.list
+        |> Enum.join("\n     ")
+      }
+      """
+    end
   end
   defp log_one([s,ok]) do
     "     " <> String.pad_trailing("#{s}",20) <> String.pad_trailing("#{ok}",10)
