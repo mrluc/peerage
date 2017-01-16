@@ -3,7 +3,7 @@ defmodule Peerage.Mixfile do
 
   def project do
     [app: :peerage,
-     version: "1.0.1",
+     version: "1.0.2",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -26,19 +26,19 @@ defmodule Peerage.Mixfile do
     [ # These are the default files included in the package
       files: ["lib", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["Luc Fueston"],
-      contributors: ["Luc Fueston"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/mrluc/peerage",
                "Docs" => "https://hexdocs.pm/peerage/readme.html"}]
   end
 
   def application do
-    [applications: [:logger, :deferred_config], mod: {Peerage, []}]
+    [applications: [:logger, :deferred_config],
+     mod: {Peerage, []}]
   end
 
   defp deps do
     [
-      {:deferred_config, "~> 0.1.0"},
+      {:deferred_config, "~> 0.1.1"},
       {:ex_doc, "~> 0.14", only: :dev},
       {:credo, "~> 0.5", only: [:dev, :test]},
     ]
