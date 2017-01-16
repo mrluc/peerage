@@ -74,6 +74,19 @@ and the Dns provider for my production releases, which run
 in places (like Kubernetes) where nodes can be 
 found by DNS discovery.
 
+## Config
+
+Optional config for all apps
+
+```elixir
+config :abc, via: SomeProvider,
+  serves: false,     # true if provider runs supervised
+  interval: 15,      # default 10
+  log_results: true  # show connection results in debug mode?
+```
+
+See specific providers for their additional config.
+
 ## Deferred Config
 
 Supporting release config is easy now.
