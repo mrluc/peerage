@@ -14,12 +14,14 @@ defmodule Peerage.Server do
   use GenServer
   require Logger
 
+  @default_sync_offset 500
+
   def start_link do
     GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
   end
 
   def init(state) do
-    Process.send_after(self(), :poll, 500)
+    Process.send_after(self(), :poll, sync_offset())
     {:ok, state}
   end
 
@@ -69,6 +71,10 @@ defmodule Peerage.Server do
   end
   defp provider do
     Application.get_env(:peerage, :via, Peerage.Via.Self)
+  end
+
+  defp sync_offset do
+    Application.get_env(:peerage, :sync_offset, @default_sync_offset)
   end
 end
 
