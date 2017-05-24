@@ -26,9 +26,13 @@ and start its application:
       [applications: [:peerage]]
     end
     def deps do
-      [{:peerage, "~> 0.3.4"}]
+      [{:peerage, "~> 1.0.2"}]
     end
 ```
+
+Note that the latest hex version may be higher than what is listed here. You can
+find the latest version on [hex](https://hex.pm/packages/peerage). You should match
+the version or alternatively you can use a looser version constraint like `"~> 1.0"`.
 
 ## Usage
 
