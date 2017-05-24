@@ -48,7 +48,7 @@ defmodule Peerage.Server do
     if log_results?() do
       table = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
       Logger.debug """
-      [Peerage #{vsn()}][ #{provider() }] Discovery every #{interval()}s.
+      [Peerage #{vsn()}][#{provider()}] Discovery every #{interval()}s.
 
       #{ table |> Enum.map(&log_one/1) |> Enum.join("\n") }
 
