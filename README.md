@@ -129,7 +129,7 @@ add the following to your config:
 
 ```elixir
     config :peerage, via: Peerage.Via.Dns,
-      dns_name: "localhost"
+      dns_name: "localhost",
       app_name: "myapp"
 ```
 
