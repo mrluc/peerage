@@ -129,7 +129,7 @@ add the following to your config:
 
 ```elixir
     config :peerage, via: Peerage.Via.Dns,
-      dns_name: "localhost"
+      dns_name: "localhost",
       app_name: "myapp"
 ```
 
@@ -162,7 +162,7 @@ be called `myapp@${NODE_IP}`, with the ip of the container being provided by an 
 Your config/prod.exs might look like this:
 
 ```elixir
-    config :peerage, via: Peerage.Via.Dns
+    config :peerage, via: Peerage.Via.Dns,
       dns_name: "myapp", # or k8s FQDN: "myapp.ns.svc.clust.local"
       app_name: "myapp"  
 ```
@@ -184,7 +184,7 @@ In Kubernetes, you can test all of this with minikube.
 ## Peerage.Via.Udp
 
 ```elixir
-  config :peerage, via: Peerage.Via.Udp, serves: true
+  config :peerage, via: Peerage.Via.Udp, serves: true,
     port: 45900
 ```
 
