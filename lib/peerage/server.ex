@@ -1,6 +1,8 @@
 defmodule Peerage.Provider do
-  @moduledoc "All a Provider needs is a 'poll' method."
+  @moduledoc "All a Provider needs is a 'poll' method. 'stale' method is optional"
   @callback poll() :: any
+  @callback stale() :: any
+  @optional_callbacks stale: 0
 end
 
 defmodule Peerage.Server do
@@ -9,6 +11,9 @@ defmodule Peerage.Server do
   Supervised server that polls the configured Provider every so often,
   deduplicating results, compares to already-connected nodes, and
   attempts to `Node.connect/1` to new ones.
+
+  If there is a requirement of disconnecting to particular nodes then
+  `stale/0` function will be used to perform disconnect with `Node.disconnect/1`
   """
 
   use GenServer
@@ -34,23 +39,59 @@ defmodule Peerage.Server do
   def poll,         do: apply(provider(), :poll, [])
   def interval,     do: Application.get_env(:peerage, :interval, 10)
   def log_results?, do: Application.get_env(:peerage, :log_results, true)
+  def stale do
+    if function_exported?(provider(), :stale, 0) do
+      apply(provider(), :stale, [])
+    else
+      []
+    end
+  end
 
   defoverridable [poll: 0, interval: 0]
 
   defp discover do
-    poll()
-    |> only_fresh_node_names
-    |> Enum.map(&([&1, Node.connect(&1)]))
+    {connect(), disconnect()}
     |> log_results
   end
 
-  defp log_results(ls) do
+  defp connect do
+    poll()
+    |> only_fresh_node_names
+    |> Enum.map(&([&1, Node.connect(&1)]))
+  end
+
+  defp disconnect do
+    stale()
+    |> only_connected_node_names
+    |> Enum.map(&[&1, Node.disconnect(&1)])
+  end
+
+  defp log_results({ls, []}) do
     if log_results?() do
       table = [["NAME", "RESULT OF ATTEMPT"]] ++ ls
       Logger.debug """
       [Peerage #{vsn()}][ #{provider() }] Discovery every #{interval()}s.
 
       #{ table |> Enum.map(&log_one/1) |> Enum.join("\n") }
+
+      #{ ["     LIVE NODES", [Atom.to_string(node()), " (self)"]] ++ Node.list
+        |> Enum.join("\n     ")
+      }
+      """
+    end
+  end
+  defp log_results({connected, disconnected}) do
+    if log_results?() do
+      connected_table = [["NAME", "RESULT OF ATTEMPT"]] ++ connected
+      disconnected_table = [["NAME", "RESULT OF ATTEMPT"]] ++ disconnected
+      Logger.debug """
+      [Peerage #{vsn()}][ #{provider() }] Discovery every #{interval()}s.
+
+      Connected nodes:
+      #{ connected_table |> Enum.map(&log_one/1) |> Enum.join("\n") }
+
+      Disconnected nodes:
+      #{ disconnected_table |> Enum.map(&log_one/1) |> Enum.join("\n") }
 
       #{ ["     LIVE NODES", [Atom.to_string(node()), " (self)"]] ++ Node.list
         |> Enum.join("\n     ")
@@ -69,6 +110,12 @@ defmodule Peerage.Server do
     |> MapSet.difference(MapSet.new(Node.list))
     |> MapSet.to_list
   end
+  defp only_connected_node_names(ps) do
+    ps
+    |> MapSet.new
+    |> MapSet.intersection(MapSet.new(Node.list))
+    |> MapSet.to_list
+  end
   defp provider do
     Application.get_env(:peerage, :via, Peerage.Via.Self)
   end
@@ -77,5 +124,3 @@ defmodule Peerage.Server do
     Application.get_env(:peerage, :sync_offset, @default_sync_offset)
   end
 end
-
-
