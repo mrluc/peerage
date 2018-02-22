@@ -3,7 +3,7 @@ defmodule PeerageTest do
   doctest Peerage
 
   @app :a1234
-  
+
   defmodule M do
     def f, do: "your key is 1234. write it down."
   end
@@ -11,6 +11,10 @@ defmodule PeerageTest do
   def setup do
     delete_all_env(@app)
     :ok
+  end
+
+  test "Server polls self" do
+    {:noreply, %{}} = Peerage.Server.handle_info(:poll, %{})
   end
 
   test "Peerage.Via.Dns.poll returns a list of names" do
@@ -24,7 +28,7 @@ defmodule PeerageTest do
   test "Deferred config sanity check" do
     # see DeferredConfig for more extensive usage
     @app |> Application.put_env(:arbitrary, {:apply, {M, :f, []}})
-    
+
     kv = @app
     |> Application.get_all_env
     |> DeferredConfig.transform_cfg
