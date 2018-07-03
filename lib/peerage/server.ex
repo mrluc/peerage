@@ -40,7 +40,7 @@ defmodule Peerage.Server do
   defp discover do
     poll()
     |> only_fresh_node_names
-    |> Enum.map(&([&1, Node.connect(&1)]))
+    |> Enum.map(&([&1, connect_to_node(&1)]))
     |> log_results
   end
 
@@ -75,6 +75,13 @@ defmodule Peerage.Server do
 
   defp sync_offset do
     Application.get_env(:peerage, :sync_offset, @default_sync_offset)
+  end
+
+  defp connect_to_node(node_name) do
+    # Avoid self connecting.
+    if node() != node_name do
+      Node.connect(node_name)
+    end
   end
 end
 
