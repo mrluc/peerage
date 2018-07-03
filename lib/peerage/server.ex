@@ -81,6 +81,8 @@ defmodule Peerage.Server do
     # Avoid self connecting.
     if node() != node_name do
       Node.connect(node_name)
+    else
+      true
     end
   end
 end
