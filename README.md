@@ -174,12 +174,20 @@ of each of the pods that make up the service; the same is
 true on a system with Weave for container networking.
 
 - If the network name needs to be specified more (perhaps
-  the dns discovery supports encoding version 
-  numbers, regions, etc into the name, and you 
-  want to only connect to the same version), 
+  the dns discovery supports encoding version
+  numbers, regions, etc into the name, and you
+  want to only connect to the same version),
   change `dns_name`.
 
 In Kubernetes, you can test all of this with minikube.
+
+
+You can also specify multiple DNS lookups when you have a
+heterogenous cluster of Nodes, each with their own app name:
+
+    config :peerage, via: Peerage.Via.Dns, dns: [
+      [dns_name: "domain-a.ns.svc.clust.local", app_name: "a"],
+      [dns_name: "domain-b.ns.svc.clust.local", app_name: "b"]]
 
 ## Peerage.Via.Udp
 
