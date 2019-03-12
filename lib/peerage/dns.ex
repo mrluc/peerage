@@ -29,23 +29,42 @@ defmodule Peerage.Via.Dns do
   def poll, do: lookup() |> to_names([])
 
   defp lookup do
-    hostname() |> String.to_charlist |> :inet_res.lookup(:in, :a)
+    hostname() |> String.to_charlist() |> :inet_res.lookup(:in, :a)
   end
 
   # turn list of ips into list of node names
   defp to_names([ip | rest], acc) when is_list(acc) do
-    Logger.debug " -> Peerage.Via.Dns resolved '#{hostname()}' to #{ to_s(ip) } "
-    to_names rest, [:"#{ app_name() }@#{ to_s(ip) }"] ++ acc
+    case log_results?() do
+      true -> Logger.debug(" -> Peerage.Via.Dns resolved '#{hostname()}' to #{to_s(ip)} ")
+      false -> nil
+    end
+
+    to_names(rest, [:"#{app_name()}@#{to_s(ip)}"] ++ acc)
   end
+
   defp to_names([], lst), do: lst
-  defp to_names(err,[]),  do: Logger.error(["dns err",err]); []
+
+  defp to_names(err, []) do
+    case log_results?() do
+      true -> Logger.error(["dns err", err])
+      false -> nil
+    end
+
+    []
+  end
 
   # helpers
   defp app_name do
     Application.get_env(:peerage, :app_name, "nonode")
   end
+
   defp hostname do
     Application.get_env(:peerage, :dns_name, "localhost")
   end
-  defp to_s(_ip = {a,b,c,d}), do: "#{a}.#{b}.#{c}.#{d}"
+
+  defp log_results? do
+    Application.get_env(:peerage, :log_results, true)
+  end
+
+  defp to_s(_ip = {a, b, c, d}), do: "#{a}.#{b}.#{c}.#{d}"
 end
