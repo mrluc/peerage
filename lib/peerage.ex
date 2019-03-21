@@ -40,7 +40,7 @@ defmodule Peerage do
   `Peerage.Via.Udp`, a GenServer, is a complete example
   of a stateful approach; it uses broadcast, and records nodes it's seen.
   """
-  import Supervisor.Spec, warn: false
+  # import Supervisor.Spec, warn: false
 
   def start(_type, _args) do
     DeferredConfig.populate(:peerage)
