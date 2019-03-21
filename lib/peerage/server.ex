@@ -16,8 +16,8 @@ defmodule Peerage.Server do
 
   @default_sync_offset 500
 
-  def start_link do
-    GenServer.start_link(__MODULE__, %{}, name: __MODULE__)
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, %{}, opts ++ [name: __MODULE__])
   end
 
   def init(state) do

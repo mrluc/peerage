@@ -30,7 +30,7 @@ defmodule Peerage.Via.Udp do
 
   @behaviour Peerage.Provider
 
-  def start_link, do: GenServer.start_link __MODULE__, :ok, name: __MODULE__
+  def start_link(opts \\ []), do: GenServer.start_link __MODULE__, :ok, opts ++ [name: __MODULE__]
 
   def init(:ok) do
     {:ok, socket} = :gen_udp.open port = get_port(), [

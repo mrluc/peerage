@@ -41,18 +41,17 @@ defmodule Peerage do
   of a stateful approach; it uses broadcast, and records nodes it's seen.
   """
   import Supervisor.Spec, warn: false
-  def start(_type, _args) do
 
+  def start(_type, _args) do
     DeferredConfig.populate(:peerage)
     # IO.inspect Application.get_all_env :peerage
     opts = [strategy: :one_for_one, name: Peerage.Supervisor]
     Supervisor.start_link(children(serves?()), opts)
   end
 
-  defp children(_srv = false), do: [worker(Peerage.Server,[])]
-  defp children(_srv = true),  do: [worker(Peerage.Server,[]), worker(provider(),[])]
+  defp children(_srv = false), do: [{Peerage.Server, []}]
+  defp children(_srv = true), do: [{Peerage.Server, []}, {provider(), []}]
 
   defp provider, do: Application.get_env(:peerage, :via, Peerage.Via.Self)
-  defp serves?,  do: Application.get_env(:peerage, :serves, false)
-
+  defp serves?, do: Application.get_env(:peerage, :serves, false)
 end
