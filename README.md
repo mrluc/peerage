@@ -86,7 +86,8 @@ Optional config for all apps
 config :abc, via: SomeProvider,
   serves: false,     # true if provider runs supervised
   interval: 15,      # default 10
-  log_results: true  # show connection results in debug mode?
+  log_results: true, # show connection results in debug mode?
+  sync_offset: 300   # peerage starts connecting nodes after this interval milliseconds. default 500
 ```
 
 See specific providers for their additional config.
